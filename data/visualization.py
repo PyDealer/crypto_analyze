@@ -46,6 +46,7 @@ class KlinesGraph(Klines, Graph):
         await self.get_historical_klines()
         await self.create_df()
         await self.processed_df()
+        await self.convert_date_in_df()
         await self.rsi() if rsi else None
         await self.volume() if volume else None
         await self.create_kline_graphic(img_id)

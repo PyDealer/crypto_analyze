@@ -50,7 +50,7 @@ class Klines(Symbol):
         columns = [
             'date', 'open', 'high', 'low', 'close', 'volume', 'turnover']
         df = pd.DataFrame(self.data, columns=columns)
-        df = df.sort_values(by='date')
+        df = df.sort_values(by='date').reset_index(drop=True)
         self.df = df
         return df
 
@@ -63,42 +63,58 @@ class Klines(Symbol):
         df['volume'] = df['volume'].astype(float)
         df['turnover'] = df['turnover'].astype(float)
         df['date'] = df['date'].astype('int64')
+        df.set_index('date', inplace=True)
+        return df
+
+    async def convert_date_in_df(self):
+        df = self.df
+        df.reset_index(inplace=True)
         df['date'] = pd.to_datetime(
             df['date'], unit='ms').dt.tz_localize(
                 'UTC').dt.tz_convert('Europe/Moscow')
         df.set_index('date', inplace=True)
-
         return df
 
-    async def many_data_to_redis_ts(self):
+#    async def save_df(self):
+#        dfs30[self.symbol] = self.df
+
+    async def many_data_to_redis_ts(self, indicator: str = 'volume'):
         ts = TimeSeries()
-        indicator = 'volume'
         data_for_madd = []
         for _, row in self.df.iterrows():
             data_for_madd.extend(
                 [f'{self.symbol}:{indicator}',
                  int(row['date']),
-                 float(row['volume'])])
+                 float(row[indicator])])
         await ts.create_timeseries(self.symbol, indicator)
         await ts.madd_timeseries(data_for_madd)
 
-    async def manage(self):
+    async def first_launch(self):
         error_symbols = []
         for symbol in self.symbols:
             self.symbol = symbol
+
             try:
                 await self.get_historical_klines()
             except ReadTimeout:
                 print(self.symbol, 'Error')
                 error_symbols.append(self.symbol)
+
             await self.create_df()
-            await self.many_data_to_redis_ts()
+            if self.interval == 5:
+                await self.many_data_to_redis_ts()
+                await self.many_data_to_redis_ts('close')
+    
         if error_symbols:
             print('try error symbols')
             for symbol in error_symbols:
+                self.symbol = symbol
+
                 try:
                     await self.get_historical_klines()
+                    await self.create_df()
+                    if self.interval == 5:
+                        await self.many_data_to_redis_ts()
+                        await self.many_data_to_redis_ts('close')
                 except ReadTimeout:
                     print(self.symbol, 'Error again')
-                await self.create_df()
-                await self.many_data_to_redis_ts()

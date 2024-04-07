@@ -1,9 +1,19 @@
 import asyncio
+from aioredis.exceptions import ResponseError
 
 from app.config import redis
 from data.visualization import KlinesGraph
 from telegram_bot.chat import SignalMessage
 import telegram
+
+
+async def create_xgroup(indicator: str = 'volume'):
+    try:
+        await redis.xgroup_create(
+            f'stream:{indicator}', f'{indicator}_consumers', '$',
+            mkstream=True)
+    except ResponseError:
+        pass
 
 
 async def volume_consumer():
