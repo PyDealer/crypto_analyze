@@ -4,7 +4,7 @@ from app.config import redis
 
 
 class TimeSeries:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     async def create_timeseries(
@@ -47,36 +47,36 @@ class TimeSeries:
         except aioredis.exceptions.ResponseError:
             print(data)
 
-    async def get_avg(
-            self,
-            symbol: str,
-            indicator: str = 'volume',
-            period: int = 60*60*24*1*1000):
-        try:
-            value = await redis.execute_command(
-                'TS.RANGE', f'{symbol}:{indicator}',
-                '-', '+',
-                'AGGREGATION', 'AVG',
-                period)
-            return value
-        except aioredis.exceptions.ResponseError:
-            pass
-
-    #async def range_aggregate(
+    #async def get_avg(
     #        self,
     #        symbol: str,
-    #        indicator: str,
-    #        aggregator: str,
+    #        indicator: str = 'volume',
     #        period: int = 60*60*24*1*1000):
     #    try:
     #        value = await redis.execute_command(
     #            'TS.RANGE', f'{symbol}:{indicator}',
     #            '-', '+',
-    #            'AGGREGATION', aggregator,
+    #            'AGGREGATION', 'AVG',
     #            period)
     #        return value
     #    except aioredis.exceptions.ResponseError:
     #        pass
+
+    async def range_aggregate(
+            self,
+            symbol: str,
+            indicator: str,
+            aggregator: str,
+            period: int = 60*60*24*1*1000):
+        try:
+            value = await redis.execute_command(
+                'TS.RANGE', f'{symbol}:{indicator}',
+                '-', '+',
+                'AGGREGATION', aggregator,
+                period)
+            return value
+        except aioredis.exceptions.ResponseError:
+            pass
 
     async def get_last(self, symbol: str, indicator: str = 'volume'):
         try:
@@ -94,6 +94,7 @@ class TimeSeries:
             return value
         except aioredis.exceptions.ResponseError:
             pass
+
 
 class Hash:
     def __init__(self) -> None:
@@ -126,3 +127,7 @@ class String:
     async def get_expire_signal(self, symbol: str, indicator: str):
         status = await redis.get(f'signal_status:{indicator}:{symbol}')
         return status
+
+
+class RedisMethods(Hash, Stream, TimeSeries, String):
+    pass
