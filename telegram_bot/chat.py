@@ -37,7 +37,7 @@ class SignalMessage:
             rsi = int(self.arg)
             if rsi < 30:
                 self.message += '. Перепроданнось по rsi'
-            if rsi < 30:
+            if rsi > 70:
                 self.message += '. Перекупленность по rsi'
 
     async def send(self):
