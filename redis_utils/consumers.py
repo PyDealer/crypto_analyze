@@ -32,15 +32,16 @@ async def signal_consumer(indicator: str = 'volume'):
         else:
             symbol = response[0][1][0][1].keys()
             symbol = list(symbol)[0]
+            arg = response[0][1][0][1][symbol]
             timestamp_stream = response[0][1][0][0]
 
             graph = KlinesGraph([symbol], candle_interval, period)
             await graph.get_graph(
                 img_id=timestamp_stream, rsi=True, volume=True)
             message = SignalMessage(
-                symbol, indicator, timestamp_stream)
+                symbol, indicator, timestamp_stream, arg=arg)
             try:
                 await message.send_to_group()
-            except (telegram.error.TimedOut):
+            except telegram.error.TimedOut:
                 await asyncio.sleep(20)
                 await message.send_to_group()

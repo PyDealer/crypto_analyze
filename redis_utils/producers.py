@@ -1,7 +1,7 @@
 from app.config import redis
 
 
-async def volume_producer(symbol: str, value: int, indicator: str = 'volume'):
+async def volume_producer(symbol: str, value: str, indicator: str = 'volume'):
     await redis.xadd(
         f'stream:{indicator}',
         {symbol: value},

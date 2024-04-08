@@ -43,9 +43,10 @@ class Analytics(RedisMethods):
              ) and ((avg_volume*3) < last_volume)):
             signal_status = await self.get_expire_signal(symbol, 'volume')
             if not signal_status:
+                message_arg = f'Difference: {round(last_volume/avg_volume, 1)}. Last: {last_volume} Avg:{avg_volume}'
                 print(f'Signal! diff: {round(last_volume/avg_volume, 1)} {symbol}: {last_volume} avg:{avg_volume}')
                 await self.set_expire_signal(symbol, 'volume', 60*15)
-                await volume_producer(symbol, last_volume) #  +++ diff ++ comments
+                await volume_producer(symbol, message_arg)
 
     async def check_rsi(self, symbol: str):
         timestamp_close = await self.range_aggregate(symbol, 'close', 'last', 30*60*1000)
