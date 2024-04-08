@@ -57,24 +57,7 @@ class Analytics(RedisMethods):
 
             rsi = df['rsi'].iloc[-1]
             if rsi is not None and (rsi < 30 or rsi > 70):
+            #if rsi is not None and rsi < 30:
                 #await self.set_expire_signal(symbol, 'rsi', 60*15)
                 #await rsi_producer(symbol, rsi)
                 print(symbol, rsi)
-            #try:
-            #    rsi = df['rsi'].iloc[-1]
-            #    if rsi < 30 or rsi > 70:
-            #        #await self.set_expire_signal(symbol, 'rsi', 60*15)
-            #        #await rsi_producer(symbol, rsi)
-            #        print(symbol, rsi)
-            #except TypeError as e:
-            #    print(df, e)
-
-#class Signal(Indicators):
-#    async def check_rsi(self):
-#        for symbol in self.symbols:
-#            if not df[symbol].empty:
-#                rsi = df[symbol]['rsi'].iloc[-1]
-#                if rsi < 30 or rsi > 70:
-#                    print(symbol, rsi)
-#            else:
-#                print(symbol)

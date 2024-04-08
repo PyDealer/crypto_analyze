@@ -5,7 +5,10 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from .config import redis
-from .schedulers import update_volume_scheduler, check_anomaly_volume_scheduler
+from .schedulers import (
+    update_volume_scheduler,
+    check_anomaly_volume_scheduler,
+    check_rsi_scheduler)
 from redis_utils.consumers import volume_consumer, create_xgroup
 from redis_utils.proscessing import TimeSeries
 from stream.ws_stream import launch_stream
@@ -41,14 +44,10 @@ async def lifespan(app: FastAPI):
 
     kline_stream = asyncio.create_task(launch_stream(symbol_list))
 
-    #volume_updater = asyncio.create_task(update_volume_scheduler(symbol_list))
-    #volume_checker = asyncio.create_task(check_anomaly_volume_scheduler(symbol_list))
+    volume_updater = asyncio.create_task(update_volume_scheduler(symbol_list))
+    volume_checker = asyncio.create_task(check_anomaly_volume_scheduler(symbol_list))
+    rsi_checker = asyncio.create_task(check_rsi_scheduler(symbol_list))
     #volume_cons = asyncio.create_task(volume_consumer())
-
-    a = Analytics()
-    for symbol in symbol_list:
-        await a.check_rsi(symbol)
-
 
     yield
     print('End')
