@@ -9,7 +9,7 @@ from .schedulers import (
     update_volume_scheduler,
     check_anomaly_volume_scheduler,
     check_rsi_scheduler)
-from redis_utils.consumers import volume_consumer, create_xgroup
+from redis_utils.consumers import signal_consumer, create_xgroup
 from redis_utils.proscessing import TimeSeries
 from stream.ws_stream import launch_stream
 from data.get_data import Klines
@@ -47,7 +47,7 @@ async def lifespan(app: FastAPI):
     volume_updater = asyncio.create_task(update_volume_scheduler(symbol_list))
     volume_checker = asyncio.create_task(check_anomaly_volume_scheduler(symbol_list))
     rsi_checker = asyncio.create_task(check_rsi_scheduler(symbol_list))
-    #volume_cons = asyncio.create_task(volume_consumer())
+    #volume_cons = asyncio.create_task(signal_consumer('volume'))
 
     yield
     print('End')
